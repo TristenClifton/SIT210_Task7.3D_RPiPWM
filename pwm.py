@@ -28,47 +28,40 @@ pi_pwm.start(0)				#start PWM of required Duty Cycle
 
 
 def ReadDistance():
+
+	GPIO.output(TRIG, True)
+	time.sleep(0.00001)
+	GPIO.output(TRIG, False)
+	pulse_start = time.time()
 	
-	readDuration = 0.2
 	
-	startReadtime = time.time()	
-	pulse_durations = []
+	timeoutTime = time.time() + 0.5
 	
-	while( time.time() < (startReadtime + readDuration)):
-	
-		GPIO.output(TRIG, True)
-		time.sleep(0.00001)
-		GPIO.output(TRIG, False)
+	while(GPIO.input(ECHO)==0 and (time.time() < timeoutTime)):
 		pulse_start = time.time()
+	
+	while(GPIO.input(ECHO)==1 and (time.time() < timeoutTime)):
+		pulse_end = time.time()
 		
-		
-		timeoutTime = time.time() + 0.5
-		
-		while(GPIO.input(ECHO)==0 and (time.time() < timeoutTime)):
-			pulse_start = time.time()
-		
-		while(GPIO.input(ECHO)==1 and (time.time() < timeoutTime)):
-			pulse_end = time.time()
-			
-		if(time.time() > timeoutTime):
-			#timeout Caught
-			print("timeout caught")
-			resetDistanceSensor()
-			return ReadDistance()
-		
-		distance = round(((pulse_end - pulse_start)* 17150), 0)
-		
-		if(distance <= 0):
-			#exception Caught Reset
-			print("exception caught")
-			resetDistanceSensor()
-			return ReadDistance()
-		
-		if(distance > 2000):
-			#exception Caught Reset
-			print("exception caught")
-			resetDistanceSensor()
-			return ReadDistance()
+	if(time.time() > timeoutTime):
+		#timeout Caught
+		print("timeout caught")
+		resetDistanceSensor()
+		return ReadDistance()
+	
+	distance = round(((pulse_end - pulse_start)* 17150), 0)
+	
+	if(distance <= 0):
+		#exception Caught Reset
+		print("exception caught")
+		resetDistanceSensor()
+		return ReadDistance()
+	
+	if(distance > 2000):
+		#exception Caught Reset
+		print("exception caught")
+		resetDistanceSensor()
+		return ReadDistance()
 
 	return distance
 	
